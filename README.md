@@ -8,13 +8,13 @@ It is step-by-step, minimal, correct, and matches AWS requirements exactly.
 
 ---
 
-# 🟩 **AWS Client VPN – Server Certificate Creation Guide (EasyRSA)**
+#  **AWS Client VPN – Server Certificate Creation Guide (EasyRSA)**
 
 This guide explains how to generate an AWS-compatible **Server Certificate** using EasyRSA and import it into **AWS Certificate Manager (ACM)** to use with **AWS Client VPN Endpoint**.
 
 ---
 
-# 📌 **Prerequisites**
+#  **Prerequisites**
 
 * Linux system (EC2 or local machine)
 * OpenSSL installed
@@ -22,7 +22,7 @@ This guide explains how to generate an AWS-compatible **Server Certificate** usi
 
 ---
 
-# 🟦 **1. Install EasyRSA**
+#  **1. Install EasyRSA**
 
 ```bash
 git clone https://github.com/OpenVPN/easy-rsa.git
@@ -31,7 +31,7 @@ cd easy-rsa/easyrsa3
 
 ---
 
-# 🟦 **2. Initialize Public Key Infrastructure (PKI)**
+#  **2. Initialize Public Key Infrastructure (PKI)**
 
 ```bash
 ./easyrsa init-pki
@@ -41,7 +41,7 @@ This creates the **pki/** directory that stores keys and certificates.
 
 ---
 
-# 🟦 **3. Build Certificate Authority (CA)**
+#  **3. Build Certificate Authority (CA)**
 
 This creates your CA certificate (root certificate).
 
@@ -57,7 +57,7 @@ clientvpn-ca
 
 ---
 
-# 🟩 **4. Generate the Server Certificate and Private Key (IMPORTANT)**
+#  **4. Generate the Server Certificate and Private Key (IMPORTANT)**
 
 This certificate is used by AWS Client VPN Endpoint.
 
@@ -77,7 +77,7 @@ Output files:
 
 ---
 
-# 🟦 **5. Verify the certificate (Optional but recommended)**
+#  **5. Verify the certificate (Optional but recommended)**
 
 ```bash
 openssl x509 -text -noout -in pki/issued/server.crt | grep -A2 "Extended Key"
@@ -92,7 +92,7 @@ X509v3 Extended Key Usage:
 
 ---
 
-# 🟩 **6. Import the Certificate into AWS Certificate Manager (ACM)**
+#  **6. Import the Certificate into AWS Certificate Manager (ACM)**
 
 Go to:
 
@@ -124,7 +124,7 @@ Then click **Import**.
 
 ---
 
-# 🟩 **7. Confirm the certificate in ACM**
+#  **7. Confirm the certificate in ACM**
 
 You should see:
 
@@ -138,7 +138,7 @@ Region must be the same as your Client VPN endpoint (example: **us-east-1**).
 
 ---
 
-# 🟦 **8. Use the Certificate in AWS Client VPN Endpoint**
+#  **8. Use the Certificate in AWS Client VPN Endpoint**
 
 While creating a Client VPN endpoint:
 
@@ -152,7 +152,7 @@ While creating a Client VPN endpoint:
 
 ---
 
-# 🟩 **Directory Structure After Generation**
+#  **Directory Structure After Generation**
 
 ```
 easy-rsa/
