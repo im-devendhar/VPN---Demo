@@ -1,4 +1,4 @@
-# VPN---Demo
+# VPN-Demo
 
 Got you!
 Here is the **clean, complete, production-ready process** for creating a **Server Certificate for AWS Client VPN** using **EasyRSA**.
