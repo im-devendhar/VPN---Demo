@@ -50,7 +50,7 @@ If security groups block the request → the connection fails even if routing is
 
 Once security groups allow the traffic, it is finally delivered to the EC2 instance.
 The EC2 instance responds back through the same path.
----
+
 ---
 
 #  **AWS Client VPN – Server Certificate Creation Guide (EasyRSA)**
