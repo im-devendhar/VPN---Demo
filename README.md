@@ -53,21 +53,30 @@ The EC2 instance responds back through the same path.
 
 ---
 
-#  **AWS Client VPN – Server Certificate Creation Guide (EasyRSA)**
+Absolutely — here is a **clean, professional, README-ready section** describing the exact steps you used to create the **CA**, **Server**, and **Client** certificates on **Amazon Linux** using **EasyRSA 3**.
 
-This guide explains how to generate an AWS-compatible **Server Certificate** using EasyRSA and import it into **AWS Certificate Manager (ACM)** to use with **AWS Client VPN Endpoint**.
-
----
-
-#  **Prerequisites**
-
-* Linux system (EC2 or local machine)
-* OpenSSL installed
-* Git installed
+This is formatted to be copy-paste ready for GitHub.
 
 ---
 
-#  **1. Install EasyRSA**
+# 📘 **Certificate Creation Guide for AWS Client VPN (EasyRSA on Amazon Linux)**
+
+This guide documents the exact steps used to generate the **Certificate Authority (CA)**, **Server certificate**, and **Client certificate** required for configuring **AWS Client VPN** using **mutual authentication**.
+
+All steps below were performed on an **Amazon Linux EC2 instance**.
+
+---
+
+# 🔧 **1. Install dependencies**
+
+```bash
+sudo yum update -y
+sudo yum install -y git openssl
+```
+
+---
+
+# 📥 **2. Download EasyRSA**
 
 ```bash
 git clone https://github.com/OpenVPN/easy-rsa.git
@@ -76,35 +85,40 @@ cd easy-rsa/easyrsa3
 
 ---
 
-#  **2. Initialize Public Key Infrastructure (PKI)**
+# 🏗️ **3. Initialize the PKI Environment**
 
 ```bash
 ./easyrsa init-pki
 ```
 
-This creates the **pki/** directory that stores keys and certificates.
+This creates the directory:
+
+```
+pki/
+```
 
 ---
 
-#  **3. Build Certificate Authority (CA)**
-
-This creates your CA certificate (root certificate).
+# 🏛️ **4. Create the Certificate Authority (CA)**
 
 ```bash
 ./easyrsa build-ca nopass
 ```
 
-When asked for **Common Name**, enter something like:
+When prompted, enter a CA name (example):
 
 ```
-clientvpn-ca
+Common Name: client-vpn
 ```
+
+This produces:
+
+* `pki/ca.crt` (CA certificate – used for Client Authentication)
+* `pki/private/ca.key` (CA private key – keep safe, never upload to ACM)
 
 ---
 
-#  **4. Generate the Server Certificate and Private Key (IMPORTANT)**
-
-This certificate is used by AWS Client VPN Endpoint.
+# 🔐 **5. Generate the Server Certificate and Key**
 
 ```bash
 ./easyrsa build-server-full server nopass
@@ -112,108 +126,93 @@ This certificate is used by AWS Client VPN Endpoint.
 
 Output files:
 
-| File                     | Purpose                     |
-| ------------------------ | --------------------------- |
-| `pki/issued/server.crt`  | Server certificate          |
-| `pki/private/server.key` | Private key                 |
-| `pki/ca.crt`             | Root CA certificate (chain) |
+* `pki/issued/server.crt`
+* `pki/private/server.key`
+* `pki/ca.crt` (chain)
 
-✔ This certificate contains the correct **Extended Key Usage = TLS Web Server Authentication**, which AWS requires.
+These 3 files are uploaded to ACM as your **Server Certificate**.
+
+Used as:
+➡ **Server certificate ARN** in Client VPN endpoint.
 
 ---
 
-#  **5. Verify the certificate (Optional but recommended)**
+# 👤 **6. Generate Client Certificate and Key**
 
 ```bash
-openssl x509 -text -noout -in pki/issued/server.crt | grep -A2 "Extended Key"
+./easyrsa build-client-full client1 nopass
 ```
 
-Expected output:
+Output files:
 
-```
-X509v3 Extended Key Usage:
-    TLS Web Server Authentication
-```
+* `pki/issued/client1.crt`
+* `pki/private/client1.key`
+* `pki/ca.crt`
+
+These will be embedded into your final `.ovpn` client config file.
+
+**Do NOT upload client certificates to ACM.**
 
 ---
 
-#  **6. Import the Certificate into AWS Certificate Manager (ACM)**
+# 📝 **7. Import Certificates into AWS ACM**
 
-Go to:
+## 🔹 **7.1 Import Server Certificate (ACM → Import certificate)**
 
-**AWS Console → Certificate Manager → Import Certificate**
+Upload the following:
 
-Upload these:
+| ACM Field         | File                     |
+| ----------------- | ------------------------ |
+| Certificate body  | `pki/issued/server.crt`  |
+| Private key       | `pki/private/server.key` |
+| Certificate chain | `pki/ca.crt`             |
 
-### Certificate body:
-
-```bash
-cat pki/issued/server.crt
-```
-
-### Certificate private key:
-
-```bash
-cat pki/private/server.key
-```
-
-### Certificate chain:
-
-```bash
-cat pki/ca.crt
-```
-
-Paste the output text into ACM fields.
-
-Then click **Import**.
+This becomes your **Server Certificate ARN**.
 
 ---
 
-#  **7. Confirm the certificate in ACM**
+## 🔹 **7.2 Import CA Certificate (Client Authentication CA)**
 
-You should see:
+This one is uploaded ONLY from the **Client VPN creation page**, not ACM.
+
+Steps:
+
+* Go to **VPC → Client VPN Endpoints → Create**
+* Enable **Use mutual authentication**
+* In the **Client certificate ARN** section, click **“Upload new client certificate”**
+* Paste the contents of:
 
 ```
-Type: Imported
-Status: Issued
-In use: No
+pki/ca.crt
 ```
 
-Region must be the same as your Client VPN endpoint (example: **us-east-1**).
+No private key is required.
+
+This becomes your **Client Certificate ARN**.
 
 ---
 
-#  **8. Use the Certificate in AWS Client VPN Endpoint**
-
-While creating a Client VPN endpoint:
-
-* **Endpoint IP address type:** IPv4
-* **Traffic IP address type:** IPv4
-* **Authentication options:**
-  ✔ Use mutual authentication
-* **Server certificate ARN:**
-  Choose the certificate you imported
-* Continue filling the rest normally
-
----
-
-#  **Directory Structure After Generation**
+# 📦 **8. Final Directory Structure**
 
 ```
 easy-rsa/
 └── easyrsa3/
     └── pki/
         ├── ca.crt
+        ├── private/
+        │   ├── ca.key
+        │   ├── server.key
+        │   └── client1.key
         ├── issued/
-        │   └── server.crt
-        └── private/
-            └── server.key
+        │   ├── server.crt
+        │   └── client1.crt
+        ├── reqs/
+        └── ...
 ```
 
 ---
 
 
 
----
 
 
