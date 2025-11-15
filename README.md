@@ -1,10 +1,25 @@
+
+
+
+
+
 # VPN-Demo
 
-Got you!
-Here is the **clean, complete, production-ready process** for creating a **Server Certificate for AWS Client VPN** using **EasyRSA**.
 
-You can paste this directly into your **GitHub README**.
-It is step-by-step, minimal, correct, and matches AWS requirements exactly.
+<img width="688" height="425" alt="image" src="https://github.com/user-attachments/assets/bfe92fdc-69d7-4ee6-affb-40a12885ee7b" />
+ **How AWS Client VPN checks and forwards traffic**
+
+1️⃣ First, the VPN checks which subnet it is associated with.
+Because without a subnet association, the VPN has no network interface inside the VPC to forward traffic.
+
+2️⃣ Next, it checks which IP ranges (CIDRs) the user is authorized to access.
+If the user's destination IP (for example, the EC2 private IP) is NOT in the authorized range → access is denied.
+
+3️⃣ Then, if the IP is within the authorized range, the VPN checks the route table inside the Client VPN endpoint.
+It verifies whether a route exists that points the user’s requested destination (EC2 subnet) to a specific associated subnet.
+
+4️⃣ Finally, if a matching route is found, traffic is forwarded through that associated subnet to the EC2 instance.
+
 
 ---
 
