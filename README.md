@@ -7,20 +7,38 @@
 
 
 <img width="688" height="425" alt="image" src="https://github.com/user-attachments/assets/bfe92fdc-69d7-4ee6-affb-40a12885ee7b" />
- **How AWS Client VPN checks and forwards traffic**
+ 🛡️ How AWS Client VPN Checks and Forwards Traffic
 
-1️⃣ First, the VPN checks which subnet it is associated with.
-Because without a subnet association, the VPN has no network interface inside the VPC to forward traffic.
+When a user connects to the AWS Client VPN, the traffic flow goes through a strict sequence of checks to ensure only authorized and correctly routed traffic reaches the EC2 instance.
 
-2️⃣ Next, it checks which IP ranges (CIDRs) the user is authorized to access.
-If the user's destination IP (for example, the EC2 private IP) is NOT in the authorized range → access is denied.
+🔷 1. Subnet Association Check
 
-3️⃣ Then, if the IP is within the authorized range, the VPN checks the route table inside the Client VPN endpoint.
-It verifies whether a route exists that points the user’s requested destination (EC2 subnet) to a specific associated subnet.
+The VPN first checks which subnet it is associated with.
+This is necessary because the VPN endpoint needs a network interface inside the VPC to forward traffic.
+Without subnet association → traffic cannot enter the VPC.
 
-4️⃣ Finally, if a matching route is found, traffic is forwarded through that associated subnet to the EC2 instance.
+🔷 2. Authorization Rule Check
 
+Next, the VPN checks which IP ranges (CIDRs) the user is authorized to access.
+If the user attempts to access an EC2 private IP that does not fall within the authorized CIDR, the traffic is denied immediately.
 
+🔷 3. Route Evaluation
+
+If the destination IP is authorized, the VPN checks its internal Client VPN route table.
+It verifies whether a route exists for the destination subnet.
+The route maps that IP range to a specific associated subnet where the VPN should forward traffic.
+
+🔷 4. Traffic Forwarding
+
+If a valid route is found, the VPN forwards the packet through the associated subnet.
+From there, the VPC routing and security groups allow traffic to reach the EC2 instance.
+
+✔️ Final Flow Summary
+User → VPN Endpoint
+     → Subnet Association
+     → Authorization Check
+     → Route Check
+     → Forward to EC2
 ---
 
 #  **AWS Client VPN – Server Certificate Creation Guide (EasyRSA)**
