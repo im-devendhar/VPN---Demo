@@ -7,6 +7,9 @@
 
 
 <img width="688" height="425" alt="image" src="https://github.com/user-attachments/assets/bfe92fdc-69d7-4ee6-affb-40a12885ee7b" />
+ 
+ 
+ 
  🛡️ How AWS Client VPN Checks and Forwards Traffic
 
 When a user connects to the AWS Client VPN, the traffic flow goes through a strict sequence of checks to ensure only authorized and correctly routed traffic reaches the EC2 instance.
