@@ -8,40 +8,49 @@
 
 <img width="688" height="425" alt="image" src="https://github.com/user-attachments/assets/bfe92fdc-69d7-4ee6-affb-40a12885ee7b" />
  
- 
+ ---
  
  🛡️ How AWS Client VPN Checks and Forwards Traffic
 
-When a user connects to the AWS Client VPN, the traffic flow goes through a strict sequence of checks to ensure only authorized and correctly routed traffic reaches the EC2 instance.
+When a user connects to the AWS Client VPN, the traffic flow goes through several stages of validation before it reaches the EC2 instance inside the VPC.
 
 🔷 1. Subnet Association Check
 
 The VPN first checks which subnet it is associated with.
-This is necessary because the VPN endpoint needs a network interface inside the VPC to forward traffic.
-Without subnet association → traffic cannot enter the VPC.
+The association gives the VPN endpoint a network interface inside the VPC.
+Without this, the VPN cannot forward any traffic into the VPC.
 
 🔷 2. Authorization Rule Check
 
 Next, the VPN checks which IP ranges (CIDRs) the user is authorized to access.
-If the user attempts to access an EC2 private IP that does not fall within the authorized CIDR, the traffic is denied immediately.
+If the user's destination IP (e.g., EC2 private IP) is not within the authorized range, the request is rejected.
 
 🔷 3. Route Evaluation
 
-If the destination IP is authorized, the VPN checks its internal Client VPN route table.
-It verifies whether a route exists for the destination subnet.
-The route maps that IP range to a specific associated subnet where the VPN should forward traffic.
+If the destination is authorized, the VPN checks its internal Client VPN route table.
+It verifies whether a route exists for the EC2 subnet and maps it to a specific associated subnet.
 
-🔷 4. Traffic Forwarding
+🔷 4. Security Group Check
 
-If a valid route is found, the VPN forwards the packet through the associated subnet.
-From there, the VPC routing and security groups allow traffic to reach the EC2 instance.
+After routing is confirmed, traffic reaches the subnet and must pass through Security Groups attached to:
 
-✔️ Final Flow Summary
-User → VPN Endpoint
-     → Subnet Association
-     → Authorization Check
-     → Route Check
-     → Forward to EC2
+The EC2 instance, and
+
+(If applicable) the Client VPN endpoint network interface
+
+These Security Groups must allow:
+
+Inbound traffic from the Client VPN CIDR (or specific users)
+
+Required ports (SSH: 22, RDP: 3389, HTTP: 80, HTTPS: 443, etc.)
+
+If security groups block the request → the connection fails even if routing is correct.
+
+🔷 5. Traffic Forwarding
+
+Once security groups allow the traffic, it is finally delivered to the EC2 instance.
+The EC2 instance responds back through the same path.
+---
 ---
 
 #  **AWS Client VPN – Server Certificate Creation Guide (EasyRSA)**
